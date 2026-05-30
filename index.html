@@ -939,9 +939,15 @@ footer {
         <p>Find out how to get more leads and sales from your advertising campaigns.</p>
       </div>
       <form id="auditForm" novalidate>
+        <!-- ✅ WEB3FORMS: Apna Access Key yahan paste karo -->
+        <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY_HERE">
+        <input type="hidden" name="subject" value="New Lead - Galaxy Fluence Growth Audit Request">
+        <input type="hidden" name="from_name" value="Galaxy Fluence Website">
+        <input type="checkbox" name="botcheck" style="display:none">
+
         <div class="form-group">
           <label class="form-label" for="fullName">Full Name *</label>
-          <input class="form-input" type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+          <input class="form-input" type="text" id="fullName" name="name" placeholder="Enter your full name" required>
           <div class="form-error" id="nameError">Please enter your full name.</div>
         </div>
         <div class="form-group">
@@ -956,11 +962,11 @@ footer {
         </div>
         <div class="form-group">
           <label class="form-label" for="business">Business Name *</label>
-          <input class="form-input" type="text" id="business" name="business" placeholder="Enter your business name" required>
+          <input class="form-input" type="text" id="business" name="business_name" placeholder="Enter your business name" required>
           <div class="form-error" id="businessError">Please enter your business name.</div>
         </div>
-        <button type="submit" class="form-submit">
-          <i class="fas fa-rocket"></i>&nbsp; Get My Free Audit
+        <button type="submit" class="form-submit" id="submitBtn">
+          <i class="fas fa-rocket"></i>&nbsp; <span id="submitText">Get My Free Audit</span>
         </button>
         <div class="form-trust">
           <i class="fas fa-lock"></i>
@@ -971,10 +977,77 @@ footer {
         <div class="success-icon"><i class="fas fa-check"></i></div>
         <h3>You're All Set! 🎉</h3>
         <p>Thanks for reaching out! Our team will contact you within 24 hours with your personalised Growth Audit.</p>
+        <a href="#" onclick="openDashboard()" style="display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:12px 28px;background:var(--gradient-main);border-radius:100px;font-family:'Outfit',sans-serif;font-weight:700;font-size:0.9rem;color:#fff;">
+          <i class="fas fa-table"></i> View All Leads Dashboard
+        </a>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ============================================================
+     LEADS DASHBOARD MODAL
+     ============================================================ -->
+<div id="dashboardModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(5,8,16,0.97);backdrop-filter:blur(20px);overflow-y:auto;padding:24px;">
+  <div style="max-width:960px;margin:0 auto;">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          <i class="fas fa-chart-bar" style="-webkit-text-fill-color:#4f8ef7"></i> Leads Dashboard
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Galaxy Fluence — Form Submissions</p>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+        <button onclick="exportCSV()" style="padding:10px 20px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:100px;color:#4f8ef7;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <i class="fas fa-download"></i> Export CSV
+        </button>
+        <button onclick="clearAllLeads()" style="padding:10px 20px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:100px;color:#f87171;font-family:'Outfit',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;">
+          <i class="fas fa-trash"></i> Clear All
+        </button>
+        <button onclick="closeDashboard()" style="width:38px;height:38px;background:var(--bg-card);border:1px solid var(--border);border-radius:50%;color:var(--text-secondary);font-size:1rem;cursor:pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div id="dashStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;"></div>
+
+    <!-- Search + Filter -->
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <input id="searchLeads" type="text" placeholder="🔍  Search by name, email, business..." oninput="renderTable()"
+        style="flex:1;min-width:200px;padding:11px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:100px;color:var(--text-primary);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;">
+    </div>
+
+    <!-- Table -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table id="leadsTable" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:rgba(79,142,247,0.06);border-bottom:1px solid var(--border);">
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">#</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Name</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Email</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Phone</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Business</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Date & Time</th>
+              <th style="padding:14px 20px;text-align:left;font-family:'Outfit',sans-serif;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);">Status</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTableBody"></tbody>
+        </table>
+      </div>
+      <div id="emptyState" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="font-size:3rem;margin-bottom:16px;">📭</div>
+        <p style="color:var(--text-muted);font-size:0.95rem;">Abhi koi lead nahi hai. Form submit hone par yahan dikhega.</p>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--text-muted);font-size:0.78rem;margin-top:16px;">
+      <i class="fas fa-info-circle"></i> Data is yahi browser me save hota hai (localStorage). CSV export karke backup lo.
+    </p>
+  </div>
+</div>
 
 <!-- ============================================================
      FINAL CTA
@@ -1113,20 +1186,43 @@ const progressObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.3 });
 progressBars.forEach(b => progressObs.observe(b));
 
-// ── Form Validation ───────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+// LEADS STORAGE — localStorage
+// ════════════════════════════════════════════════════════════
+const LEADS_KEY = 'gf_leads';
+
+function getLeads() {
+  try { return JSON.parse(localStorage.getItem(LEADS_KEY)) || []; }
+  catch { return []; }
+}
+function saveLead(lead) {
+  const leads = getLeads();
+  leads.unshift(lead);                     // newest first
+  localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+}
+
+// ════════════════════════════════════════════════════════════
+// FORM VALIDATION + SUBMIT (Web3Forms + Dashboard)
+// ════════════════════════════════════════════════════════════
 const form = document.getElementById('auditForm');
 if (form) {
-  form.addEventListener('submit', function(e) {
+  const fields = [
+    { id: 'fullName',  errId: 'nameError',     validate: v => v.trim().length >= 2 },
+    { id: 'email',     errId: 'emailError',    validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'phone',     errId: 'phoneError',    validate: v => /^[\d\s\+\-\(\)]{7,15}$/.test(v.trim()) },
+    { id: 'business',  errId: 'businessError', validate: v => v.trim().length >= 2 }
+  ];
+
+  // Real-time clear errors
+  form.querySelectorAll('.form-input').forEach(input => {
+    input.addEventListener('input', () => input.classList.remove('error'));
+  });
+
+  form.addEventListener('submit', async function(e) {
     e.preventDefault();
+
+    // — Validate all fields —
     let valid = true;
-
-    const fields = [
-      { id: 'fullName', errId: 'nameError', validate: v => v.trim().length >= 2 },
-      { id: 'email', errId: 'emailError', validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
-      { id: 'phone', errId: 'phoneError', validate: v => /^[\d\s\+\-\(\)]{7,15}$/.test(v.trim()) },
-      { id: 'business', errId: 'businessError', validate: v => v.trim().length >= 2 }
-    ];
-
     fields.forEach(f => {
       const input = document.getElementById(f.id);
       const error = document.getElementById(f.errId);
@@ -1139,20 +1235,200 @@ if (form) {
         error.style.display = 'none';
       }
     });
+    if (!valid) return;
 
-    if (valid) {
-      // For Formspree/Web3Forms integration, replace with actual endpoint:
-      // fetch('https://formspree.io/f/YOUR_ID', { method:'POST', body: new FormData(form) })
+    // — Collect data —
+    const leadData = {
+      id:       Date.now(),
+      name:     document.getElementById('fullName').value.trim(),
+      email:    document.getElementById('email').value.trim(),
+      phone:    document.getElementById('phone').value.trim(),
+      business: document.getElementById('business').value.trim(),
+      datetime: new Date().toLocaleString('en-IN', { dateStyle:'medium', timeStyle:'short' }),
+      status:   'New'
+    };
+
+    // — Show loading state —
+    const btn      = document.getElementById('submitBtn');
+    const btnText  = document.getElementById('submitText');
+    btn.disabled   = true;
+    btnText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+    // — Send to Web3Forms (email) —
+    const accessKey = form.querySelector('[name="access_key"]').value;
+    let emailSent   = false;
+
+    if (accessKey && accessKey !== 'YOUR_WEB3FORMS_ACCESS_KEY_HERE') {
+      try {
+        const formData  = new FormData(form);
+        const response  = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: formData
+        });
+        const result = await response.json();
+        emailSent = result.success;
+      } catch (err) {
+        console.warn('Web3Forms error:', err);
+      }
+    } else {
+      // Access key not set yet — still save to dashboard
+      emailSent = true;
+      console.info('ℹ️ Web3Forms key not set. Add your key to enable email notifications.');
+    }
+
+    // — Save to local dashboard (always) —
+    saveLead(leadData);
+
+    // — Show success —
+    if (emailSent || accessKey === 'YOUR_WEB3FORMS_ACCESS_KEY_HERE') {
       form.style.display = 'none';
       document.getElementById('successMessage').style.display = 'block';
+    } else {
+      btn.disabled   = false;
+      btnText.innerHTML = '<i class="fas fa-rocket"></i> Get My Free Audit';
+      alert('Something went wrong. Please try again.');
     }
   });
-
-  // Real-time validation
-  form.querySelectorAll('.form-input').forEach(input => {
-    input.addEventListener('input', () => input.classList.remove('error'));
-  });
 }
+
+// ════════════════════════════════════════════════════════════
+// DASHBOARD — Open / Close
+// ════════════════════════════════════════════════════════════
+function openDashboard() {
+  document.getElementById('dashboardModal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderTable();
+}
+function closeDashboard() {
+  document.getElementById('dashboardModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+// Close on ESC
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDashboard(); });
+
+// ════════════════════════════════════════════════════════════
+// DASHBOARD — Render Table
+// ════════════════════════════════════════════════════════════
+function renderTable() {
+  const leads  = getLeads();
+  const query  = (document.getElementById('searchLeads')?.value || '').toLowerCase();
+  const tbody  = document.getElementById('leadsTableBody');
+  const empty  = document.getElementById('emptyState');
+  const table  = document.getElementById('leadsTable');
+
+  // Stats
+  const statsEl = document.getElementById('dashStats');
+  if (statsEl) {
+    const today = new Date().toLocaleDateString('en-IN');
+    const todayCount = leads.filter(l => l.datetime && l.datetime.startsWith(today.split('/').reverse().join('-').slice(0,6))).length;
+    statsEl.innerHTML = `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">Total Leads</div>
+        <div style="font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;background:var(--gradient-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${leads.length}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">New (Unread)</div>
+        <div style="font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;color:#4ade80;">${leads.filter(l=>l.status==='New').length}</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;">Latest Lead</div>
+        <div style="font-family:'Outfit',sans-serif;font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-top:6px;">${leads.length ? leads[0].name : '—'}</div>
+      </div>`;
+  }
+
+  // Filter
+  const filtered = leads.filter(l =>
+    !query ||
+    l.name.toLowerCase().includes(query) ||
+    l.email.toLowerCase().includes(query) ||
+    l.business.toLowerCase().includes(query) ||
+    l.phone.includes(query)
+  );
+
+  if (!filtered.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((l, i) => `
+    <tr style="border-bottom:1px solid var(--border);transition:background 0.2s;" onmouseover="this.style.background='rgba(79,142,247,0.04)'" onmouseout="this.style.background=''">
+      <td style="padding:14px 20px;color:var(--text-muted);font-size:0.82rem;">${filtered.length - i}</td>
+      <td style="padding:14px 20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--gradient-main);display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:0.75rem;color:#fff;flex-shrink:0;">
+            ${l.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+          </div>
+          <span style="font-weight:600;font-size:0.9rem;">${escHtml(l.name)}</span>
+        </div>
+      </td>
+      <td style="padding:14px 20px;font-size:0.88rem;color:var(--text-secondary);">
+        <a href="mailto:${escHtml(l.email)}" style="color:#4f8ef7;">${escHtml(l.email)}</a>
+      </td>
+      <td style="padding:14px 20px;font-size:0.88rem;color:var(--text-secondary);">
+        <a href="tel:${escHtml(l.phone)}" style="color:var(--text-secondary);">${escHtml(l.phone)}</a>
+      </td>
+      <td style="padding:14px 20px;font-size:0.88rem;color:var(--text-secondary);">${escHtml(l.business)}</td>
+      <td style="padding:14px 20px;font-size:0.82rem;color:var(--text-muted);white-space:nowrap;">${escHtml(l.datetime)}</td>
+      <td style="padding:14px 20px;">
+        <select onchange="updateStatus(${l.id}, this.value)"
+          style="padding:5px 10px;background:${l.status==='New'?'rgba(74,222,128,0.1)':l.status==='Contacted'?'rgba(79,142,247,0.1)':'rgba(251,191,36,0.1)'};
+                 border:1px solid ${l.status==='New'?'rgba(74,222,128,0.3)':l.status==='Contacted'?'rgba(79,142,247,0.3)':'rgba(251,191,36,0.3)'};
+                 border-radius:100px;color:${l.status==='New'?'#4ade80':l.status==='Contacted'?'#4f8ef7':'#fbbf24'};
+                 font-size:0.78rem;font-weight:700;cursor:pointer;outline:none;font-family:'Outfit',sans-serif;">
+          <option value="New"       ${l.status==='New'?'selected':''}>🟢 New</option>
+          <option value="Contacted" ${l.status==='Contacted'?'selected':''}>🔵 Contacted</option>
+          <option value="Closed"    ${l.status==='Closed'?'selected':''}>🟡 Closed</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateStatus(id, newStatus) {
+  const leads = getLeads();
+  const lead  = leads.find(l => l.id === id);
+  if (lead) { lead.status = newStatus; localStorage.setItem(LEADS_KEY, JSON.stringify(leads)); renderTable(); }
+}
+
+function clearAllLeads() {
+  if (confirm('Saare leads delete karna chahte ho? Yeh action undo nahi hoga.')) {
+    localStorage.removeItem(LEADS_KEY);
+    renderTable();
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// CSV EXPORT
+// ════════════════════════════════════════════════════════════
+function exportCSV() {
+  const leads = getLeads();
+  if (!leads.length) { alert('Koi lead nahi hai export karne ke liye.'); return; }
+  const headers = ['#', 'Name', 'Email', 'Phone', 'Business', 'Date & Time', 'Status'];
+  const rows    = leads.map((l, i) => [
+    leads.length - i, l.name, l.email, l.phone, l.business, l.datetime, l.status
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv  = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `galaxy-fluence-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Dashboard shortcut button in navbar area (optional) ──
+// Uncomment below to add a "Dashboard" link in nav:
+// document.querySelector('.nav-links').insertAdjacentHTML('beforeend',
+//   '<a href="#" onclick="openDashboard();return false;" style="color:#4f8ef7;font-weight:700;">📊 Leads</a>');
+
 </script>
 
 </body>
